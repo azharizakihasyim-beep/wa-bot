@@ -1,5 +1,22 @@
+// ================= SERVER (WAJIB UNTUK RENDER) =================
+
+const express = require("express")
+
+const app = express()
+
+app.get("/", (req,res)=>{
+res.send("WA BOT RUNNING")
+})
+
+const PORT = process.env.PORT || 3000
+
+app.listen(PORT, ()=>{
+console.log("Server running on port", PORT)
+})
+
+// ================= IMPORT =================
+
 const { default: makeWASocket, useMultiFileAuthState, fetchLatestBaileysVersion } = require("@whiskeysockets/baileys")
-const readline = require("readline")
 const { google } = require("googleapis")
 
 // ================= GOOGLE SHEETS =================
@@ -9,7 +26,10 @@ keyFile: "service-account.json",
 scopes: ["https://www.googleapis.com/auth/spreadsheets"]
 })
 
-const sheets = google.sheets({ version: "v4", auth })
+const sheets = google.sheets({
+version: "v4",
+auth: auth
+})
 
 const SPREADSHEET_ID = "1AgdwdBn1C1hS-imfQrI64sg9ezq9GtIAn5dyYT5jjrE"
 const SHEET_NAME = "FIX DATA"
@@ -27,7 +47,8 @@ const pemasukanKategori = [
 "hadiah"
 ]
 
-// kirim data ke spreadsheet
+// ================= KIRIM KE SHEET =================
+
 async function kirimKeSheet(kategori, jumlah, keterangan){
 
 try{
@@ -41,14 +62,17 @@ jenis = "Pemasukan"
 }
 
 await sheets.spreadsheets.values.append({
+
 spreadsheetId: SPREADSHEET_ID,
 range: `${SHEET_NAME}!A:E`,
 valueInputOption: "USER_ENTERED",
+
 resource:{
 values:[
 [tanggal, jenis, kategori, jumlah, keterangan]
 ]
 }
+
 })
 
 console.log("✅ Data masuk spreadsheet")
@@ -77,25 +101,8 @@ browser: ["Windows","Chrome","120.0.0.0"]
 
 sock.ev.on("creds.update", saveCreds)
 
-// pairing login
-if (!sock.authState.creds.registered) {
+// ================= STATUS KONEKSI =================
 
-const rl = readline.createInterface({
-input: process.stdin,
-output: process.stdout
-})
-
-rl.question("Masukkan nomor WhatsApp (contoh 628xxxx): ", async (number) => {
-
-const code = await sock.requestPairingCode(number)
-
-console.log("Kode Pairing WhatsApp:", code)
-
-})
-
-}
-
-// status koneksi
 sock.ev.on("connection.update", (update) => {
 
 const { connection } = update
@@ -106,7 +113,7 @@ console.log("✅ WhatsApp Connected")
 
 if (connection === "close") {
 
-console.log("⚠️ Connection lost, reconnecting in 5 seconds...")
+console.log("⚠️ Connection lost, reconnecting...")
 
 setTimeout(() => {
 startBot()
@@ -116,7 +123,8 @@ startBot()
 
 })
 
-// membaca pesan
+// ================= BACA PESAN =================
+
 sock.ev.on("messages.upsert", async ({ messages }) => {
 
 const msg = messages[0]
@@ -139,10 +147,12 @@ else {
 return
 }
 
+if (!text) return
+
 // ID grup target
 const targetGroup = "120363406601077048@g.us"
 
-if (chatId === targetGroup) {
+if (chatId !== targetGroup) return
 
 console.log("📩 Pesan:", text)
 
@@ -159,8 +169,6 @@ console.log("Jumlah:", jumlah)
 console.log("Keterangan:", keterangan)
 
 kirimKeSheet(kategori, jumlah, keterangan)
-
-}
 
 })
 
