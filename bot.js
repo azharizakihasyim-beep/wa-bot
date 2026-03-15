@@ -1,4 +1,4 @@
-// ================= SERVER (WAJIB UNTUK RENDER) =================
+// ================= SERVER UNTUK RENDER =================
 
 const express = require("express")
 
@@ -101,6 +101,18 @@ browser: ["Windows","Chrome","120.0.0.0"]
 
 sock.ev.on("creds.update", saveCreds)
 
+// ================= PAIRING CODE =================
+
+if (!sock.authState.creds.registered) {
+
+const phoneNumber = "6285280475940" // GANTI DENGAN NOMOR WA KAMU
+
+const code = await sock.requestPairingCode(phoneNumber)
+
+console.log("Kode Pairing WhatsApp:", code)
+
+}
+
 // ================= STATUS KONEKSI =================
 
 sock.ev.on("connection.update", (update) => {
@@ -149,7 +161,7 @@ return
 
 if (!text) return
 
-// ID grup target
+// ID GRUP TARGET
 const targetGroup = "120363406601077048@g.us"
 
 if (chatId !== targetGroup) return
