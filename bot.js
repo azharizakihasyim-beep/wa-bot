@@ -96,22 +96,10 @@ const { version } = await fetchLatestBaileysVersion()
 const sock = makeWASocket({
 version,
 auth: state,
-browser: ["Windows","Chrome","120.0.0.0"]
+browser: ["Ubuntu","Chrome","20.0.04"]
 })
 
 sock.ev.on("creds.update", saveCreds)
-
-// ================= PAIRING CODE =================
-
-if (!sock.authState.creds.registered) {
-
-const phoneNumber = "6285280475940" // GANTI DENGAN NOMOR WA KAMU
-
-const code = await sock.requestPairingCode(phoneNumber)
-
-console.log("Kode Pairing WhatsApp:", code)
-
-}
 
 // ================= STATUS KONEKSI =================
 
@@ -134,6 +122,24 @@ startBot()
 }
 
 })
+
+// ================= PAIRING CODE =================
+
+if (!sock.authState.creds.registered) {
+
+const phoneNumber = "6285280475940" // GANTI DENGAN NOMOR WA KAMU
+
+console.log("Meminta kode pairing...")
+
+setTimeout(async () => {
+
+const code = await sock.requestPairingCode(phoneNumber)
+
+console.log("Kode Pairing WhatsApp:", code)
+
+}, 5000)
+
+}
 
 // ================= BACA PESAN =================
 
